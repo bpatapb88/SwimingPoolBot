@@ -4,8 +4,22 @@ import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
+import java.io.FileInputStream;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
+
 
 public class Main {
+
+    static Logger logger;
+    static {
+        try(FileInputStream ins = new FileInputStream("log.config")){
+            LogManager.getLogManager().readConfiguration(ins);
+            logger = Logger.getLogger(Main.class.getName());
+        }catch (Exception ignore){
+            ignore.printStackTrace();
+        }
+    }
 
     public static void main(String[] args) {
         try {
@@ -14,17 +28,5 @@ public class Main {
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
-
-//        Druzstevni druzstevni = new Druzstevni();
-//        System.out.println(reformatFreeWays(druzstevni.getFreeWays()));
-
-//
-//        ZaLuzankami zaLuzankami = new ZaLuzankami();
-//        System.out.println(zaLuzankami.getFreeWays());
-//
-//        KraviHora kraviHora = new KraviHora();
-//        System.out.println(kraviHora.getFreeWays());
     }
-
-
 }

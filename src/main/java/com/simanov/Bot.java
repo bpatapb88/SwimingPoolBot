@@ -14,10 +14,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+
+import static com.simanov.Main.logger;
 
 public class Bot extends TelegramLongPollingBot {
 
-    private static String[] POOLS = new String[] {"Druzstevni", "Za Luzankami", "Kravi Hora"};
+    private static final String[] POOLS = new String[] {"Druzstevni", "Za Luzankami", "Kravi Hora"};
+    private static final Bazen[] allBazens = new Bazen[] {new Druzstevni(), new ZaLuzankami(), new KraviHora()};
+    private static final String WELCOME_QUESTION = "Выбери бассейны в Брно:";
+    private static final String REMOVE_FROM_CLASS_NAME = "class com.simanov.";
+    private static final String END = "Запустить снова -  /start ";
+    private static final String ONE_LINE_RESULT = "\u231A %s:00 \uD83C\uDFCA %s\n";
 
     /**
      * Method for receiving messages.
@@ -30,7 +38,7 @@ public class Bot extends TelegramLongPollingBot {
                 poll.setChatId(update.getMessage().getChatId().toString());
                 poll.setAllowMultipleAnswers(true);
                 poll.setIsAnonymous(false);
-                poll.setQuestion("Выбери бассейны в Брно:");
+                poll.setQuestion(WELCOME_QUESTION);
                 poll.setOptions(Arrays.asList(POOLS));
             try {
                 execute(poll);
@@ -41,15 +49,14 @@ public class Bot extends TelegramLongPollingBot {
             PollAnswer pollAnswer = update.getPollAnswer();
             List<Integer> answers = pollAnswer.getOptionIds();
             StringBuilder resultMessage = new StringBuilder();
-            Bazen[] allBazens = new Bazen[] {new Druzstevni(), new ZaLuzankami(), new KraviHora()};
+
             for (Integer bazenId: answers){
-                String bazenName = allBazens[bazenId].getClass().toString().replace("class com.simanov.", "");
+                String bazenName = allBazens[bazenId].getClass().toString().replace(REMOVE_FROM_CLASS_NAME, "");
                 resultMessage.append(bazenName).append("\n").append(reformatFreeWays(allBazens[bazenId].getFreeWays())).append("\n");
             }
-
-            resultMessage.append("Запустить снова -  /start ");
+            resultMessage.append(END);
             SendMessage response = new SendMessage();
-            System.out.println("Bot was used by " + update.getPollAnswer().getUser());
+            logger.log(Level.INFO, "Bot was used by {0}", update.getPollAnswer().getUser());
             response.setChatId(update.getPollAnswer().getUser().getId().toString());
             response.setText(resultMessage.toString());
             try {
@@ -63,7 +70,8 @@ public class Bot extends TelegramLongPollingBot {
     private static String reformatFreeWays(Map<Integer, Integer> input){
         StringBuilder result = new StringBuilder();
         for (Map.Entry<Integer, Integer> entry : input.entrySet()){
-            result.append("\u231A " + entry.getKey() + ":00 \uD83C\uDFCA " + entry.getValue() + "\n");
+            String str = String.format(ONE_LINE_RESULT, entry.getKey(),entry.getValue());
+            result.append(str);
         }
         return result.toString();
     }
@@ -89,7 +97,7 @@ public class Bot extends TelegramLongPollingBot {
             URL url = Resources.getResource("Config.txt");
             apiKey = Resources.toString(url, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            System.out.println("Not possible to send Bot Token");
+            logger.log(Level.INFO, "Not possible to send Bot Token {0}.", e.toString());
             e.printStackTrace();
         }
         return apiKey;
