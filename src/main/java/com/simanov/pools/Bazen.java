@@ -1,4 +1,4 @@
-package com.simanov;
+package com.simanov.pools;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -29,7 +29,7 @@ public class Bazen {
     /**
      * @return return String with timeslots and number of free ways
      */
-    Map<Integer, Integer> getFreeWays() {
+    public Map<Integer, Integer> getFreeWays() {
         return Collections.emptyMap();
     }
 

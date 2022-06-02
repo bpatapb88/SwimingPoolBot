@@ -1,6 +1,7 @@
 package com.simanov;
 
 import com.google.common.io.Resources;
+import com.simanov.pools.*;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.polls.SendPoll;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -20,8 +21,20 @@ import static com.simanov.Main.logger;
 
 public class Bot extends TelegramLongPollingBot {
 
-    private static final String[] POOLS = new String[] {"Druzstevni", "Za Luzankami", "Kravi Hora"};
-    private static final Bazen[] allBazens = new Bazen[] {new Druzstevni(), new ZaLuzankami(), new KraviHora()};
+    private static final String[] POOLS = new String[] {
+            "Za Lužánkami",
+            "Kraví Hora",
+            "Kohoutovice",
+            "Družstevní",
+            "Ponávka",
+            "TJ TESLA"};
+    private static final Bazen[] allBazens = new Bazen[] {
+            new ZaLuzankami(),
+            new KraviHora(),
+            new Kohoutovice(),
+            new Druzstevni(),
+            new Ponavka(),
+            new TjTesla()};
     private static final String WELCOME_QUESTION = "Выбери бассейны в Брно:";
     private static final String REMOVE_FROM_CLASS_NAME = "class com.simanov.";
     private static final String END = "Запустить снова -  /start ";

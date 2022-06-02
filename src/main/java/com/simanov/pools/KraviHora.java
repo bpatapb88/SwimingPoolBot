@@ -1,4 +1,4 @@
-package com.simanov;
+package com.simanov.pools;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
