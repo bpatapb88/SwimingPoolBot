@@ -1,6 +1,9 @@
-com/simanov/Bazen.class
-com/simanov/KraviHora.class
+com/simanov/pools/KraviHora.class
+com/simanov/pools/ZaLuzankami.class
+com/simanov/pools/Bazen.class
+com/simanov/pools/TjTesla.class
+com/simanov/pools/Druzstevni.class
+com/simanov/pools/Ponavka.class
 com/simanov/Bot.class
-com/simanov/Druzstevni.class
+com/simanov/pools/Kohoutovice.class
 com/simanov/Main.class
-com/simanov/ZaLuzankami.class

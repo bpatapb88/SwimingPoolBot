@@ -36,7 +36,7 @@ public class Bot extends TelegramLongPollingBot {
             new Ponavka(),
             new TjTesla()};
     private static final String WELCOME_QUESTION = "Выбери бассейны в Брно:";
-    private static final String REMOVE_FROM_CLASS_NAME = "class com.simanov.";
+    private static final String REMOVE_FROM_CLASS_NAME = "class com.simanov.pools.";
     private static final String END = "Запустить снова -  /start ";
     private static final String ONE_LINE_RESULT = "\u231A %s:00 \uD83C\uDFCA %s\n";
 
