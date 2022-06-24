@@ -10,6 +10,12 @@ import java.util.Map;
 public class Pool {
     Map<Integer, Integer> resultMap = new HashMap<>();
     private static final String ONE_LINE_RESULT = "\u231A %s:00 \uD83C\uDFCA %s\n";
+    protected String poolName;
+
+    public Pool(String poolName) {
+        this.poolName = poolName;
+    }
+
     /**
      * @return return Document with full html
      */
@@ -33,6 +39,13 @@ public class Pool {
      */
     protected Map<Integer, Integer> getFreeWays() {
         return Collections.emptyMap();
+    }
+
+    /**
+     * @return return name of pool as String
+     */
+    public String getName(){
+        return poolName;
     }
 
     public void clearResultMap(){

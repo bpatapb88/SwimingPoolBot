@@ -11,6 +11,10 @@ import java.util.TreeMap;
 public class Ponavka extends Pool {
     public static final String URL_STR = "https://ponavka.sportujemevbrne.cz/rezervace/";
 
+    public Ponavka(String poolName) {
+        super(poolName);
+    }
+
     @Override
     protected Map<Integer, Integer> getFreeWays() {
         Document doc = connect(URL_STR);

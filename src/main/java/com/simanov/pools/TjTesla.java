@@ -11,6 +11,10 @@ import java.util.TreeMap;
 public class TjTesla extends Pool {
     public static final String URL_STR = "https://www.tjteslabrno.cz/sportovni-zarizeni/bazen-25m.html";
 
+    public TjTesla(String poolName) {
+        super(poolName);
+    }
+
     @Override
     protected Map<Integer, Integer> getFreeWays() {
         Document doc = connect(URL_STR);

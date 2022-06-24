@@ -8,8 +8,13 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class Druzstevni extends Pool {
+
     private static final String URL_STR = "https://www.druzstevni.cz/bazeny/rozvrh-hodin/";
     private static final int COUNT_OF_WAYS_IN_POOL = 6;
+
+    public Druzstevni(String poolName) {
+        super(poolName);
+    }
 
     @Override
     protected Map<Integer, Integer> getFreeWays(){

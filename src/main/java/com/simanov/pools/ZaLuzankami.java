@@ -10,6 +10,10 @@ import java.util.TreeMap;
 public class ZaLuzankami extends Pool {
     public static final String URL_STR = "https://mpsl.sportujemevbrne.cz/rezervace";
 
+    public ZaLuzankami(String poolName) {
+        super(poolName);
+    }
+
     public String getUrlStr(){
         return URL_STR;
     }

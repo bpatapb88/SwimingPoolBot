@@ -11,6 +11,10 @@ public class KraviHora extends Pool {
 
     private static final String URL_STR = "https://www.kravihora-brno.cz/kryta-plavecka-hala";
 
+    public KraviHora(String poolName) {
+        super(poolName);
+    }
+
 
     @Override
     protected Map<Integer, Integer> getFreeWays() {

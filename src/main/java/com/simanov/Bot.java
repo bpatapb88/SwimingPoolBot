@@ -12,30 +12,23 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.simanov.Main.logger;
 
 public class Bot extends TelegramLongPollingBot {
 
-    private static final String[] POOL_NAMES = new String[] {
-            "Za Lužánkami",
-            "Kraví Hora",
-            "Kohoutovice",
-            "Družstevní",
-            "Ponávka",
-            "TJ TESLA"};
     private static final Pool[] ALL_POOLS = new Pool[] {
-            new ZaLuzankami(),
-            new KraviHora(),
-            new Kohoutovice(),
-            new Druzstevni(),
-            new Ponavka(),
-            new TjTesla()};
+            new ZaLuzankami("Za Lužánkami"),
+            new KraviHora("Kraví Hora"),
+            new Kohoutovice("Kohoutovice"),
+            new Druzstevni("Družstevní"),
+            new Ponavka("Ponávka"),
+            new TjTesla("TJ TESLA")};
     private static final String WELCOME_QUESTION = "Выбери бассейны в Брно:";
-    private static final String REMOVE_FROM_CLASS_NAME = "class com.simanov.pools.";
     private static final String END_MESSAGE = "Запустить снова -  /start ";
 
     /**
@@ -45,12 +38,16 @@ public class Bot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if(update.getMessage() != null && update.getMessage().isCommand() && update.getMessage().getText().equals("/start")){
+            Stream<Pool> poolStream = Stream.of(ALL_POOLS);
+            List<String> optionsList = poolStream.map(Pool::getName).collect(Collectors.toList());
+
             SendPoll poll = new SendPoll();
                 poll.setChatId(update.getMessage().getChatId().toString());
                 poll.setAllowMultipleAnswers(true);
                 poll.setIsAnonymous(false);
                 poll.setQuestion(WELCOME_QUESTION);
-                poll.setOptions(Arrays.asList(POOL_NAMES));
+                poll.setOptions(optionsList);
+
             try {
                 execute(poll);
             } catch (TelegramApiException e) {
@@ -63,7 +60,7 @@ public class Bot extends TelegramLongPollingBot {
             StringBuilder resultMessage = new StringBuilder();
 
             for (Integer bazenId: answers){
-                String poolName = ALL_POOLS[bazenId].getClass().toString().replace(REMOVE_FROM_CLASS_NAME, "");
+                String poolName = ALL_POOLS[bazenId].getName();
                 String freeWays = ALL_POOLS[bazenId].getFreeWaysFormatted();
                 resultMessage.append(poolName)
                         .append("\n")
