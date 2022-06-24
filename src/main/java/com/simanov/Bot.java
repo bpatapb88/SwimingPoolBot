@@ -14,21 +14,20 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 
 import static com.simanov.Main.logger;
 
 public class Bot extends TelegramLongPollingBot {
 
-    private static final String[] POOLS = new String[] {
+    private static final String[] POOL_NAMES = new String[] {
             "Za Lužánkami",
             "Kraví Hora",
             "Kohoutovice",
             "Družstevní",
             "Ponávka",
             "TJ TESLA"};
-    private static final Bazen[] allBazens = new Bazen[] {
+    private static final Pool[] ALL_POOLS = new Pool[] {
             new ZaLuzankami(),
             new KraviHora(),
             new Kohoutovice(),
@@ -37,8 +36,7 @@ public class Bot extends TelegramLongPollingBot {
             new TjTesla()};
     private static final String WELCOME_QUESTION = "Выбери бассейны в Брно:";
     private static final String REMOVE_FROM_CLASS_NAME = "class com.simanov.pools.";
-    private static final String END = "Запустить снова -  /start ";
-    private static final String ONE_LINE_RESULT = "\u231A %s:00 \uD83C\uDFCA %s\n";
+    private static final String END_MESSAGE = "Запустить снова -  /start ";
 
     /**
      * Method for receiving messages.
@@ -52,41 +50,40 @@ public class Bot extends TelegramLongPollingBot {
                 poll.setAllowMultipleAnswers(true);
                 poll.setIsAnonymous(false);
                 poll.setQuestion(WELCOME_QUESTION);
-                poll.setOptions(Arrays.asList(POOLS));
+                poll.setOptions(Arrays.asList(POOL_NAMES));
             try {
                 execute(poll);
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }
         }else if(update.getPollAnswer() != null){
+            logger.log(Level.INFO, "User with id {0} answered poll. Start to collect data... ", update.getPollAnswer().getUser().getId());
             PollAnswer pollAnswer = update.getPollAnswer();
             List<Integer> answers = pollAnswer.getOptionIds();
             StringBuilder resultMessage = new StringBuilder();
 
             for (Integer bazenId: answers){
-                String bazenName = allBazens[bazenId].getClass().toString().replace(REMOVE_FROM_CLASS_NAME, "");
-                resultMessage.append(bazenName).append("\n").append(reformatFreeWays(allBazens[bazenId].getFreeWays())).append("\n");
+                String poolName = ALL_POOLS[bazenId].getClass().toString().replace(REMOVE_FROM_CLASS_NAME, "");
+                String freeWays = ALL_POOLS[bazenId].getFreeWaysFormatted();
+                resultMessage.append(poolName)
+                        .append("\n")
+                        .append(freeWays)
+                        .append("\n");
+                ALL_POOLS[bazenId].clearResultMap();
             }
-            resultMessage.append(END);
+            resultMessage.append(END_MESSAGE);
             SendMessage response = new SendMessage();
-            logger.log(Level.INFO, "Bot was used by {0}", update.getPollAnswer().getUser());
             response.setChatId(update.getPollAnswer().getUser().getId().toString());
             response.setText(resultMessage.toString());
             try {
                 execute(response);
+                logger.log(Level.INFO, "Response send to {0}", update.getPollAnswer().getUser());
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }
+        } else {
+            logger.log(Level.WARNING, "message= {0}", update.getMessage().getText());
         }
-    }
-
-    private static String reformatFreeWays(Map<Integer, Integer> input){
-        StringBuilder result = new StringBuilder();
-        for (Map.Entry<Integer, Integer> entry : input.entrySet()){
-            String str = String.format(ONE_LINE_RESULT, entry.getKey(),entry.getValue());
-            result.append(str);
-        }
-        return result.toString();
     }
 
 

@@ -8,11 +8,11 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class Ponavka extends Bazen{
+public class Ponavka extends Pool {
     public static final String URL_STR = "https://ponavka.sportujemevbrne.cz/rezervace/";
 
     @Override
-    public Map<Integer, Integer> getFreeWays() {
+    protected Map<Integer, Integer> getFreeWays() {
         Document doc = connect(URL_STR);
         Elements timetable = doc.getElementsByTag("table").get(2).getElementsByTag("td");
         for (Element element:timetable) {

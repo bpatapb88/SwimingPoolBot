@@ -7,12 +7,12 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class Druzstevni extends Bazen{
+public class Druzstevni extends Pool {
     private static final String URL_STR = "https://www.druzstevni.cz/bazeny/rozvrh-hodin/";
     private static final int COUNT_OF_WAYS_IN_POOL = 6;
 
     @Override
-    public Map<Integer, Integer> getFreeWays(){
+    protected Map<Integer, Integer> getFreeWays(){
         Document doc = connect(URL_STR);
         // parsing start
         Elements timetable = doc.getElementById("timetable-1").children().get(0).children();

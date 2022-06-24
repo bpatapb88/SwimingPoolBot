@@ -8,11 +8,11 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class TjTesla extends Bazen{
+public class TjTesla extends Pool {
     public static final String URL_STR = "https://www.tjteslabrno.cz/sportovni-zarizeni/bazen-25m.html";
 
     @Override
-    public Map<Integer, Integer> getFreeWays() {
+    protected Map<Integer, Integer> getFreeWays() {
         Document doc = connect(URL_STR);
         Elements timetable = doc.getElementById("tesla-bazen")
                 .getElementsByTag("tr")

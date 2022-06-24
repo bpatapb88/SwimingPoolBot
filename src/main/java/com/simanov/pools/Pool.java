@@ -7,8 +7,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Bazen {
+public class Pool {
     Map<Integer, Integer> resultMap = new HashMap<>();
+    private static final String ONE_LINE_RESULT = "\u231A %s:00 \uD83C\uDFCA %s\n";
     /**
      * @return return Document with full html
      */
@@ -28,9 +29,23 @@ public class Bazen {
 
     /**
      * @return return String with timeslots and number of free ways
+     * This method is overridden for every pool
      */
-    public Map<Integer, Integer> getFreeWays() {
+    protected Map<Integer, Integer> getFreeWays() {
         return Collections.emptyMap();
     }
 
+    public void clearResultMap(){
+        resultMap.clear();
+    }
+
+    public String getFreeWaysFormatted(){
+        Map<Integer, Integer> freeWays = this.getFreeWays();
+        StringBuilder result = new StringBuilder();
+        for (Map.Entry<Integer, Integer> entry : freeWays.entrySet()){
+            String str = String.format(ONE_LINE_RESULT, entry.getKey(),entry.getValue());
+            result.append(str);
+        }
+        return result.toString();
+    }
 }

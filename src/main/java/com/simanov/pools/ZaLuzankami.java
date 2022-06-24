@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class ZaLuzankami extends Bazen{
+public class ZaLuzankami extends Pool {
     public static final String URL_STR = "https://mpsl.sportujemevbrne.cz/rezervace";
 
     public String getUrlStr(){
@@ -15,7 +15,7 @@ public class ZaLuzankami extends Bazen{
     }
 
     @Override
-    public Map<Integer, Integer> getFreeWays() {
+    protected Map<Integer, Integer> getFreeWays() {
         Document doc = connect(getUrlStr());
         Elements timetable = doc.getElementsByTag("table").get(2).getElementsByTag("td");
         for (Element element:timetable) {

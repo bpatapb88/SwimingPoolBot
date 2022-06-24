@@ -7,13 +7,13 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class KraviHora extends Bazen{
+public class KraviHora extends Pool {
 
     private static final String URL_STR = "https://www.kravihora-brno.cz/kryta-plavecka-hala";
 
 
     @Override
-    public Map<Integer, Integer> getFreeWays() {
+    protected Map<Integer, Integer> getFreeWays() {
         Document doc = connect(URL_STR);
         Elements timetable = doc.getElementsByTag("table").get(1).getElementsByTag("tr");
         timetable.remove(timetable.last());
