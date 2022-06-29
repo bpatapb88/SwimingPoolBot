@@ -41,32 +41,31 @@ public class Bot extends TelegramLongPollingBot {
         if(update.getMessage() != null && update.getMessage().isCommand() && update.getMessage().getText().equals("/start")){
             sendPoll(update);
         }else if(update.getPollAnswer() != null){
-            sendResponse(update);
+            sendResponse(update.getPollAnswer());
         } else {
             logger.log(Level.WARNING, "message= {0}", update.getMessage());
         }
     }
 
-    private void sendResponse(Update update) {
-        String responseString = poolAnswersToRespond(update);
+    private void sendResponse(PollAnswer pollAnswer) {
+        String responseString = poolAnswersToRespond(pollAnswer);
         SendMessage response = new SendMessage();
-        response.setChatId(update.getPollAnswer().getUser().getId().toString());
+        response.setChatId(pollAnswer.getUser().getId().toString());
         response.setText(responseString);
         try {
             execute(response);
             String message = String.format("Response:\"%s\" %n" +
                     "send to %s",
                     responseString,
-                    update.getPollAnswer().getUser().getFirstName());
+                    pollAnswer.getUser().getFirstName());
             logger.log(Level.INFO, message);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
     }
 
-    private String poolAnswersToRespond(Update update) {
-        logger.log(Level.INFO, "User with id {0} answered poll. Start to collect data... ", update.getPollAnswer().getUser().getId());
-        PollAnswer pollAnswer = update.getPollAnswer();
+    private String poolAnswersToRespond(PollAnswer pollAnswer) {
+        logger.log(Level.INFO, "User with id {0} answered poll. Start to collect data... ", pollAnswer.getUser().getId());
         List<Integer> answers = pollAnswer.getOptionIds();
         StringBuilder resultMessage = new StringBuilder();
 
