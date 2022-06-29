@@ -30,6 +30,7 @@ public class Bot extends TelegramLongPollingBot {
             new TjTesla("TJ TESLA")};
     private static final String WELCOME_QUESTION = "Выбери бассейны в Брно:";
     private static final String END_MESSAGE = "Запустить снова -  /start ";
+    private static final List<String> optionsList = Stream.of(ALL_POOLS).map(Pool::getName).collect(Collectors.toList());
 
     /**
      * Method for receiving messages.
@@ -38,48 +39,61 @@ public class Bot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if(update.getMessage() != null && update.getMessage().isCommand() && update.getMessage().getText().equals("/start")){
-            Stream<Pool> poolStream = Stream.of(ALL_POOLS);
-            List<String> optionsList = poolStream.map(Pool::getName).collect(Collectors.toList());
-
-            SendPoll poll = new SendPoll();
-                poll.setChatId(update.getMessage().getChatId().toString());
-                poll.setAllowMultipleAnswers(true);
-                poll.setIsAnonymous(false);
-                poll.setQuestion(WELCOME_QUESTION);
-                poll.setOptions(optionsList);
-
-            try {
-                execute(poll);
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
+            sendPoll(update);
         }else if(update.getPollAnswer() != null){
-            logger.log(Level.INFO, "User with id {0} answered poll. Start to collect data... ", update.getPollAnswer().getUser().getId());
-            PollAnswer pollAnswer = update.getPollAnswer();
-            List<Integer> answers = pollAnswer.getOptionIds();
-            StringBuilder resultMessage = new StringBuilder();
-
-            for (Integer bazenId: answers){
-                String poolName = ALL_POOLS[bazenId].getName();
-                String freeWays = ALL_POOLS[bazenId].getFreeWaysFormatted();
-                resultMessage.append(poolName)
-                        .append("\n")
-                        .append(freeWays)
-                        .append("\n");
-                ALL_POOLS[bazenId].clearResultMap();
-            }
-            resultMessage.append(END_MESSAGE);
-            SendMessage response = new SendMessage();
-            response.setChatId(update.getPollAnswer().getUser().getId().toString());
-            response.setText(resultMessage.toString());
-            try {
-                execute(response);
-                logger.log(Level.INFO, "Response send to {0}", update.getPollAnswer().getUser());
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
+            sendResponse(update);
         } else {
-            logger.log(Level.WARNING, "message= {0}", update.getMessage().getText());
+            logger.log(Level.WARNING, "message= {0}", update.getMessage());
+        }
+    }
+
+    private void sendResponse(Update update) {
+        String responseString = poolAnswersToRespond(update);
+        SendMessage response = new SendMessage();
+        response.setChatId(update.getPollAnswer().getUser().getId().toString());
+        response.setText(responseString);
+        try {
+            execute(response);
+            String message = String.format("Response:\"%s\" %n" +
+                    "send to %s",
+                    responseString,
+                    update.getPollAnswer().getUser().getFirstName());
+            logger.log(Level.INFO, message);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String poolAnswersToRespond(Update update) {
+        logger.log(Level.INFO, "User with id {0} answered poll. Start to collect data... ", update.getPollAnswer().getUser().getId());
+        PollAnswer pollAnswer = update.getPollAnswer();
+        List<Integer> answers = pollAnswer.getOptionIds();
+        StringBuilder resultMessage = new StringBuilder();
+
+        for (Integer bazenId: answers){
+            String poolName = ALL_POOLS[bazenId].getName();
+            String freeWays = ALL_POOLS[bazenId].getFreeWaysFormatted();
+            resultMessage.append(poolName)
+                    .append("\n")
+                    .append(freeWays)
+                    .append("\n");
+            ALL_POOLS[bazenId].clearResultMap();
+        }
+        resultMessage.append(END_MESSAGE);
+        return resultMessage.toString();
+    }
+
+    private void sendPoll(Update update) {
+        SendPoll poll = new SendPoll();
+        poll.setChatId(update.getMessage().getChatId().toString());
+        poll.setAllowMultipleAnswers(true);
+        poll.setIsAnonymous(false);
+        poll.setQuestion(WELCOME_QUESTION);
+        poll.setOptions(optionsList);
+        try {
+            execute(poll);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
         }
     }
 
