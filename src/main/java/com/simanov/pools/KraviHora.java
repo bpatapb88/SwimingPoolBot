@@ -10,7 +10,6 @@ import java.util.TreeMap;
 public class KraviHora extends Pool {
 
     private static final String URL_STR = "https://www.kravihora-brno.cz/kryta-plavecka-hala";
-
     public KraviHora(String poolName) {
         super(poolName);
     }
@@ -23,13 +22,17 @@ public class KraviHora extends Pool {
         timetable.remove(timetable.last());
         timetable.remove(timetable.last());
         timetable.remove(timetable.first());
+
         for(Element element : timetable){
             Elements oneWayRow = element.getElementsByTag("td");
             for(Element column : oneWayRow){
                 String time = column.attr("class");
+
                 if(!time.equals("equip-label") &&
                     column.attr("title").equals("") &&
-                        LocalDateTime.now().getHour() <= Integer.parseInt(time.split("-")[1])){
+                        LocalDateTime.now().getHour() <= Integer.parseInt(time.split("-")[1])
+                        && time.split("-")[2].startsWith("00")
+                ){
                     int key = Integer.parseInt(time.split("-")[1]);
                     resultMap.put(key, resultMap.get(key) != null ? resultMap.get(key) + 1 : 1);
                 }

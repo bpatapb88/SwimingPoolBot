@@ -8,7 +8,7 @@ import java.util.*;
 
 public class FitnessBody extends SquashCenter {
 
-    private static final String URL_STR = "http://88.208.115.20:28080/timeline/day?tc%5B0%5D.s=true&_tc%5B0%5D.s=on&check_all=on&_csrf=046792b9-d374-4223-bdf9-850cbcdadeac&criteriaTimestamp=";
+    private static final String URL_STR = "https://88.208.115.20:28080/timeline/day?tc%5B0%5D.s=true&_tc%5B0%5D.s=on&check_all=on&_csrf=e5cf4101-d2dd-4b60-a713-a469225d92c6&criteriaTimestamp=";
     //&criteriaTimestamp=1668542837287
 
 
@@ -49,9 +49,9 @@ public class FitnessBody extends SquashCenter {
         for (String timeSlot : timeslots){
             int kortsFree = getNumberFreeKorts(oneDay,timeSlot);
             if(kortsFree > 0){
-                result.append("Время: ")
+                result.append("\u231A: ")
                         .append(timeSlot)
-                        .append(" Кортов: ")
+                        .append(" \uD83C\uDFBE: ")
                         .append(kortsFree)
                         .append("\n");
             }

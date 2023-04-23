@@ -50,7 +50,7 @@ public class Squash extends TelegramLongPollingBot {
 
         if(recivedMessage.isCommand() && recivedMessage.getText().equals("/start")){
             sendPolls(update);
-        } else if (recivedMessage.isCommand() && recivedMessage.getText().equals("/free")){
+        } else if (recivedMessage.isCommand() && recivedMessage.getText().equals("/free@squash_brno_bot")){
             Calendar calendar = Calendar.getInstance();
             Date date = new Date();
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy,MM,dd");
@@ -68,11 +68,17 @@ public class Squash extends TelegramLongPollingBot {
             SquashCenter fit = ALL_CENTERS[0];
 
             String[] days = new String[]{"Понедельник","Вторник","Среда", "Четверг"};
+            StringBuilder textToSend = new StringBuilder();
+            textToSend.append("Next week in " + fit.getCenterName() + "\n");
             for(String dayInNextWeek : days){
-                String text = dayInNextWeek + " " + new Timestamp(nextWeekDay).toString().split(" ")[0] + "\n" + fit.getPageFormated(nextWeekDay);
-                sendMessage(text,recivedMessage.getChatId().toString());
+                String content = fit.getPageFormated(nextWeekDay);
+                if(!content.equals("")){
+                    String text = dayInNextWeek + " " + new Timestamp(nextWeekDay).toString().split(" ")[0] + "\n" + content;
+                    textToSend.append(text).append("\n");
+                }
                 nextWeekDay+=DAY_IN_SECONDS*1000;
             }
+            sendMessage(textToSend.toString(),recivedMessage.getChatId().toString());
         }
     }
 

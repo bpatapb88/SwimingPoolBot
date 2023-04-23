@@ -18,6 +18,7 @@ public class SquashCenter {
     Document connect(String urlString){
         Document doc = null;
         try {
+            System.out.println("connect() " + urlString);
             doc = Jsoup.connect(urlString)
                     .userAgent("Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36")
                     .timeout(0)
@@ -30,7 +31,9 @@ public class SquashCenter {
         return doc;
     }
 
-
+    public String getCenterName() {
+        return centerName;
+    }
 
     protected String getPage(Long nextMonday){
         return "";

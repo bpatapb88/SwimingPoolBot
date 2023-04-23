@@ -10,6 +10,7 @@ import java.util.Map;
 public class Pool {
     Map<Integer, Integer> resultMap = new HashMap<>();
     private static final String ONE_LINE_RESULT = "\u231A %s:00 \uD83C\uDFCA %s\n";
+
     protected String poolName;
 
     public Pool(String poolName) {
