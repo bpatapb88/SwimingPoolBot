@@ -56,19 +56,35 @@ public class LeonSleep extends TelegramLongPollingBot {
             handleCommands(update, recivedMessage);
             return;
         }
+        handleRequest(update, recivedMessage);
+    }
 
+    private void handleRequest(Update update, Message recivedMessage) {
         var text = recivedMessage.getText().toLowerCase();
-        var command = getCommand(text);
-        if (command != null) {
+        var request = getRequest(text);
+        var responseMessage = "ok";
+        if (request != null) {
             if(save.containsKey(LocalDate.now())) {
-                save.get(LocalDate.now()).add(command);
+                save.get(LocalDate.now()).add(request);
             } else {
-                save.put(LocalDate.now(), new LinkedList<>(List.of(command)));
+                save.put(LocalDate.now(), new LinkedList<>(List.of(request)));
             }
-
-            logger.log(Level.INFO, "Registered command: {}", command);
+            var logMessage = String.format("Registered request: %s. ChatId %s",
+                    request,
+                    update.getMessage().getChatId()
+            );
+            logger.log(Level.INFO, logMessage);
+        } else {
+            responseMessage = "Не понял.. дак он уснул или встал?";
         }
-
+        SendMessage response = new SendMessage();
+        response.setChatId(update.getMessage().getChatId().toString());
+        response.setText(responseMessage);
+        try {
+            execute(response);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
     }
 
     private void handleCommands(Update update, Message recivedMessage) {
@@ -91,17 +107,29 @@ public class LeonSleep extends TelegramLongPollingBot {
 
         var responseMessage = firstPart +
                 duration.toHoursPart() + " часов "
-                + duration.toMinutesPart() + " минут";
+                + duration.toMinutesPart() + " минут \n";
+        var allCommands = getFormattedCommands(commands);
         var responseToId = update.getMessage().getChatId().toString();
-        var logMessage = String.format("Send message to %s, message %s", responseToId, responseMessage);
+        var logMessage = String.format("Send message to %s, message %s",
+                responseToId,
+                responseMessage
+        );
         logger.log(Level.INFO, logMessage);
         response.setChatId(responseToId);
-        response.setText(responseMessage);
+        response.setText(responseMessage + allCommands);
         try {
             execute(response);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
+    }
+
+    private String getFormattedCommands(LinkedList<SleepCommand> commands) {
+        StringBuilder result = new StringBuilder();
+        for (SleepCommand command : commands) {
+            result.append(command.command() + " в " + command.time() + "\n");
+        }
+        return result.toString();
     }
 
     private Duration getSleepTime(LinkedList<SleepCommand> commands) {
@@ -132,7 +160,7 @@ public class LeonSleep extends TelegramLongPollingBot {
         return result;
     }
 
-    private SleepCommand getCommand(String text) {
+    private SleepCommand getRequest(String text) {
         var localTime = getTime(text);
 
         if (text.contains(UP)){
@@ -154,7 +182,6 @@ public class LeonSleep extends TelegramLongPollingBot {
                     Integer.parseInt(time[1])
             );
         }
-
         return LocalTime.now();
     }
 }
