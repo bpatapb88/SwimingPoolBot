@@ -1,5 +1,6 @@
 /src/main/resources/Config.txt
 /src/main/resources/SquashConf.txt
+/src/main/resources/LeonConf.txt
 
 # Compiled class file
 *.class

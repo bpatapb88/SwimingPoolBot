@@ -10,5 +10,7 @@ com/simanov/pools/ZaLuzankami.class
 com/simanov/pools/Pool.class
 com/simanov/Squash.class
 com/simanov/pools/TjTesla.class
+com/simanov/leonSleep/SleepCommand.class
 com/simanov/pools/Ponavka.class
+com/simanov/LeonSleep.class
 com/simanov/squashCenters/FitnessBody.class

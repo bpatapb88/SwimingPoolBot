@@ -26,6 +26,7 @@ public class Main {
             TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
             botsApi.registerBot(new Bot());
             botsApi.registerBot(new Squash());
+            botsApi.registerBot(new LeonSleep());
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
