@@ -61,16 +61,16 @@ public class LeonSleep extends TelegramLongPollingBot {
 
     private void handleRequest(Update update, Message recivedMessage) {
         var text = recivedMessage.getText().toLowerCase();
-        var request = getRequest(text);
+        var sleepCommand = toSleepCommand(text);
         var responseMessage = "ok";
-        if (request != null) {
+        if (sleepCommand != null) {
             if(save.containsKey(LocalDate.now())) {
-                save.get(LocalDate.now()).add(request);
+                save.get(LocalDate.now()).add(sleepCommand);
             } else {
-                save.put(LocalDate.now(), new LinkedList<>(List.of(request)));
+                save.put(LocalDate.now(), new LinkedList<>(List.of(sleepCommand)));
             }
-            var logMessage = String.format("Registered request: %s. ChatId %s",
-                    request,
+            var logMessage = String.format("Registered sleepCommand: %s. ChatId %s",
+                    sleepCommand,
                     update.getMessage().getChatId()
             );
             logger.log(Level.INFO, logMessage);
@@ -102,9 +102,10 @@ public class LeonSleep extends TelegramLongPollingBot {
             default:
                 return;
         }
+        boolean orderGood = verifyCommandList(commands);
         var duration = getSleepTime(commands);
         SendMessage response = new SendMessage();
-
+        firstPart = orderGood ? firstPart : "Проверте порядок команд!\n" + firstPart;
         var responseMessage = firstPart +
                 duration.toHoursPart() + " часов "
                 + duration.toMinutesPart() + " минут \n";
@@ -123,6 +124,26 @@ public class LeonSleep extends TelegramLongPollingBot {
             e.printStackTrace();
         }
     }
+
+    private boolean verifyCommandList(LinkedList<SleepCommand> commands) {
+        if (commands.isEmpty() || commands.size() == 1) {
+            return true;
+        }
+        commands.sort(Comparator.comparing(SleepCommand::time));
+        for (int i = 1 ; i < commands.size(); i ++) {
+            if (commands.get(i).command().equals(commands.get(i-1).command())) {
+                var logMessage = String.format(
+                        "Warning! order UP/DOWN is broken. Command 1 %s, Command 2 %s, All %s",
+                        commands.get(i-1),
+                        commands.get(i),
+                        commands
+                );
+                logger.log(Level.WARNING , logMessage);
+                return false;
+            }
+        }
+        return true;
+     }
 
     private String getFormattedCommands(LinkedList<SleepCommand> commands) {
         StringBuilder result = new StringBuilder();
@@ -150,7 +171,7 @@ public class LeonSleep extends TelegramLongPollingBot {
                 previous = command.time();
                 state = state.equals(UP) ? DOWN : UP;
             } else {
-                logger.log(Level.WARNING , "Warning! order UP/DOWN is broken. {}", commands);
+                //TODO
             }
         }
 
@@ -160,8 +181,9 @@ public class LeonSleep extends TelegramLongPollingBot {
         return result;
     }
 
-    private SleepCommand getRequest(String text) {
-        var localTime = getTime(text);
+    private SleepCommand toSleepCommand(String text) {
+        var localTime = grepTime(text);
+        System.out.println("getRequest: time " + localTime);
 
         if (text.contains(UP)){
             return new SleepCommand(localTime, UP);
@@ -172,16 +194,23 @@ public class LeonSleep extends TelegramLongPollingBot {
         }
     }
 
-    private LocalTime getTime(String text) {
+    private LocalTime grepTime(String text) {
+        LocalTime result;
         Pattern pattern = Pattern.compile("\\b([01]?\\d|2[0-3]):[0-5]\\d\\b");
         Matcher matcher = pattern.matcher(text);
+
         if (matcher.find()) {
             var time = matcher.group().split(":");
-            return LocalTime.of(
+            result = LocalTime.of(
                     Integer.parseInt(time[0]),
                     Integer.parseInt(time[1])
             );
+        } else {
+            result = LocalTime.of(
+                    LocalTime.now().getHour(),
+                    LocalTime.now().getMinute()
+            );
         }
-        return LocalTime.now();
+        return result;
     }
 }
