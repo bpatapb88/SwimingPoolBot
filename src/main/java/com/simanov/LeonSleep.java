@@ -26,6 +26,9 @@ public class LeonSleep extends TelegramLongPollingBot {
     private static final String UP = "встал";
     private static final String DOWN = "уснул";
     private Map<LocalDate, LinkedList<SleepCommand>> save = new HashMap<>();
+    //TODO notify both parents about request
+    private static final String papaId = "";
+    private static final String mamaId = "";
 
     @Override
     public String getBotUsername() {
@@ -77,9 +80,13 @@ public class LeonSleep extends TelegramLongPollingBot {
         } else {
             responseMessage = "Не понял.. дак он уснул или встал?";
         }
+        send(update.getMessage().getChatId().toString(), responseMessage);
+    }
+
+    private void send(String chatId, String text) {
         SendMessage response = new SendMessage();
-        response.setChatId(update.getMessage().getChatId().toString());
-        response.setText(responseMessage);
+        response.setChatId(chatId);
+        response.setText(text);
         try {
             execute(response);
         } catch (TelegramApiException e) {
@@ -104,25 +111,16 @@ public class LeonSleep extends TelegramLongPollingBot {
         }
         boolean orderGood = verifyCommandList(commands);
         var duration = getSleepTime(commands);
-        SendMessage response = new SendMessage();
+
         firstPart = orderGood ? firstPart : "Проверте порядок команд!\n" + firstPart;
-        var responseMessage = firstPart +
-                duration.toHoursPart() + " часов "
-                + duration.toMinutesPart() + " минут \n";
-        var allCommands = getFormattedCommands(commands);
-        var responseToId = update.getMessage().getChatId().toString();
-        var logMessage = String.format("Send message to %s, message %s",
-                responseToId,
-                responseMessage
-        );
+        var text = firstPart
+                + duration.toHoursPart() + " часов "
+                + duration.toMinutesPart() + " минут \n"
+                + getFormattedCommands(commands);
+        var chatId = update.getMessage().getChatId().toString();
+        var logMessage = String.format("Send message to %s, message %s", chatId, text);
         logger.log(Level.INFO, logMessage);
-        response.setChatId(responseToId);
-        response.setText(responseMessage + allCommands);
-        try {
-            execute(response);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
+        send(chatId, text);
     }
 
     private boolean verifyCommandList(LinkedList<SleepCommand> commands) {
