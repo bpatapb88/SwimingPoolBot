@@ -1,7 +1,7 @@
 package com.simanov;
 
 import com.google.common.io.Resources;
-import com.simanov.leonSleep.SleepCommand;
+import com.simanov.leonSleep.*;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -23,12 +23,11 @@ import static com.simanov.Main.logger;
 
 public class LeonSleep extends TelegramLongPollingBot {
 
-    private static final String UP = "встал";
-    private static final String DOWN = "уснул";
     private Map<LocalDate, LinkedList<SleepCommand>> save = new HashMap<>();
     //TODO notify both parents about request
-    private static final String papaId = "";
-    private static final String mamaId = "";
+    private static final String papaId = "173780137";
+    private static final String mamaId = "103165518";
+    private static final String timePattern = "\\b([01]?\\d|2[0-3]):[0-5]\\d\\b";
 
     @Override
     public String getBotUsername() {
@@ -50,37 +49,53 @@ public class LeonSleep extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        if(update.getMessage() == null){
+        if(update.getMessage() == null || notParents(update)){
             return;
         }
         Message recivedMessage = update.getMessage();
-
+        String response;
         if (recivedMessage.isCommand()) {
-            handleCommands(update, recivedMessage);
-            return;
+            response = handleCommands(update, recivedMessage);
+        }else {
+            response = handleRequest(update, recivedMessage);
         }
-        handleRequest(update, recivedMessage);
+        send(update.getMessage().getChatId().toString(), response);
     }
 
-    private void handleRequest(Update update, Message recivedMessage) {
-        var text = recivedMessage.getText().toLowerCase();
-        var sleepCommand = toSleepCommand(text);
-        var responseMessage = "ok";
-        if (sleepCommand != null) {
-            if(save.containsKey(LocalDate.now())) {
-                save.get(LocalDate.now()).add(sleepCommand);
-            } else {
-                save.put(LocalDate.now(), new LinkedList<>(List.of(sleepCommand)));
-            }
-            var logMessage = String.format("Registered sleepCommand: %s. ChatId %s",
-                    sleepCommand,
-                    update.getMessage().getChatId()
-            );
-            logger.log(Level.INFO, logMessage);
-        } else {
-            responseMessage = "Не понял.. дак он уснул или встал?";
+    private boolean notParents(Update update) {
+        var id = update.getMessage().getChatId().toString();
+        return !id.equals(papaId) && !id.equals(mamaId);
+    }
+
+    private String handleRequest(Update update, Message receivedMessage) {
+        var sleepCommand = toSleepCommand(receivedMessage.getText().toLowerCase());
+        if (sleepCommand == null) {
+            return "Не понял.. дак он уснул или встал?";
         }
-        send(update.getMessage().getChatId().toString(), responseMessage);
+
+        if (!save.containsKey(LocalDate.now())) {
+            save.put(LocalDate.now(), new LinkedList<>(List.of(sleepCommand)));
+            notifyPartner(update.getMessage().getChatId().toString(), sleepCommand);
+            return "ok";
+        }
+        if(rejectRequest(update, sleepCommand)) {
+            return "Ошибка! последняя запись тоже была \"" + sleepCommand.command() + "\"";
+        }
+        save.get(LocalDate.now()).add(sleepCommand);
+        notifyPartner(update.getMessage().getChatId().toString(), sleepCommand);
+        return "ok";
+    }
+
+    private boolean rejectRequest(Update update, SleepCommand sleepCommand) {
+        return textToTime(update.getMessage().getText().toLowerCase()).equals("")
+                && save.get(LocalDate.now()).getLast().command().equals(sleepCommand.command());
+    }
+
+    private void notifyPartner(String chatId, SleepCommand sleepCommand) {
+        var newChatId = chatId.equals(mamaId) ? papaId : mamaId;
+        var who = chatId.equals(mamaId) ? "Мама записала что " : "Папа записала что ";
+        var message = who + "Леон " + sleepCommand.command() + " в " + sleepCommand.time();
+        send(newChatId, message);
     }
 
     private void send(String chatId, String text) {
@@ -94,36 +109,32 @@ public class LeonSleep extends TelegramLongPollingBot {
         }
     }
 
-    private void handleCommands(Update update, Message recivedMessage) {
-        String firstPart = "Леон ";
-        LinkedList<SleepCommand> commands;
-        switch (recivedMessage.getText()) {
-            case "/today" :
-                commands = save.get(LocalDate.now());
-                firstPart += "спал сегодня ";
-                break;
-            case "/vcera":
-                commands = save.get(LocalDate.now().minusDays(1));
-                firstPart += "спал вчера ";
-                break;
-            default:
-                return;
-        }
-        boolean orderGood = verifyCommandList(commands);
-        var duration = getSleepTime(commands);
-
-        firstPart = orderGood ? firstPart : "Проверте порядок команд!\n" + firstPart;
-        var text = firstPart
-                + duration.toHoursPart() + " часов "
-                + duration.toMinutesPart() + " минут \n"
-                + getFormattedCommands(commands);
+    private String handleCommands(Update update, Message recivedMessage) {
+        Request request = messageToRequest(recivedMessage);
+        var response = request == null ? "" : request.getRespond();
+        var text = response.equals("") ? "Command not found" : response;
         var chatId = update.getMessage().getChatId().toString();
         var logMessage = String.format("Send message to %s, message %s", chatId, text);
         logger.log(Level.INFO, logMessage);
-        send(chatId, text);
+        return text;
     }
 
-    private boolean verifyCommandList(LinkedList<SleepCommand> commands) {
+    private Request messageToRequest(Message recivedMessage) {
+        switch (recivedMessage.getText()) {
+            case "/today" :
+                return new RequestTodayAll(save);
+            case "/vcera":
+                return new RequestYesterdayAll(save);
+            case "/day_sleep":
+                return new RequestTodayDay(save);
+            case "/yesterday_sleep":
+                return new RequestYesterdayDay(save);
+            default:
+                return null;
+        }
+    }
+
+    public static boolean verifyCommandList(LinkedList<SleepCommand> commands) {
         if (commands.isEmpty() || commands.size() == 1) {
             return true;
         }
@@ -151,29 +162,29 @@ public class LeonSleep extends TelegramLongPollingBot {
         return result.toString();
     }
 
-    private Duration getSleepTime(LinkedList<SleepCommand> commands) {
+    public static Duration sleepTimeAll(LinkedList<SleepCommand> commands) {
         Duration result = Duration.ZERO;
         if(commands.isEmpty()) {
-            return result;
+            return Duration.ZERO;
         }
         commands.sort(Comparator.comparing(SleepCommand::time));
-        var firstIsUp = commands.get(0).command().equals(UP);
-        String state = firstIsUp ? UP : DOWN;
-        LocalTime previous = firstIsUp ? LocalTime.MIN : commands.get(0).time();
+        var firstIsUp = commands.getFirst().command().equals(State.UP);
+        State state = firstIsUp ? State.UP : State.DOWN;
+        LocalTime previous = firstIsUp ? LocalTime.MIN : commands.getFirst().time();
 
         for(SleepCommand command : commands) {
             if(command.command().equals(state)) {
-                if (state.equals(UP)) {
+                if (state.equals(State.UP)) {
                     result = result.plus(Duration.between(previous, command.time()));
                 }
                 previous = command.time();
-                state = state.equals(UP) ? DOWN : UP;
+                state = state.equals(State.UP) ? State.DOWN : State.UP;
             } else {
                 //TODO
             }
         }
 
-        if(commands.get(commands.size()-1).command().equals(DOWN)) {
+        if(commands.getLast().command().equals(State.DOWN)) {
             result = result.plus(Duration.between(commands.get(commands.size()-1).time(), LocalTime.now()));
         }
         return result;
@@ -181,34 +192,34 @@ public class LeonSleep extends TelegramLongPollingBot {
 
     private SleepCommand toSleepCommand(String text) {
         var localTime = grepTime(text);
-        System.out.println("getRequest: time " + localTime);
-
-        if (text.contains(UP)){
-            return new SleepCommand(localTime, UP);
-        } else if(text.contains(DOWN)) {
-            return new SleepCommand(localTime, DOWN);
+        if (text.contains(State.UP.label)){
+            return new SleepCommand(localTime, State.UP);
+        } else if(text.contains(State.DOWN.label)) {
+            return new SleepCommand(localTime, State.DOWN);
         } else {
             return null;
         }
     }
 
     private LocalTime grepTime(String text) {
-        LocalTime result;
-        Pattern pattern = Pattern.compile("\\b([01]?\\d|2[0-3]):[0-5]\\d\\b");
-        Matcher matcher = pattern.matcher(text);
-
-        if (matcher.find()) {
-            var time = matcher.group().split(":");
-            result = LocalTime.of(
-                    Integer.parseInt(time[0]),
-                    Integer.parseInt(time[1])
+        String time = textToTime(text);
+        if (!time.equals("")) {
+            var timeArray = time.split(":");
+            return LocalTime.of(
+                    Integer.parseInt(timeArray[0]),
+                    Integer.parseInt(timeArray[1])
             );
         } else {
-            result = LocalTime.of(
+            return LocalTime.of(
                     LocalTime.now().getHour(),
                     LocalTime.now().getMinute()
             );
         }
-        return result;
+    }
+
+    private String textToTime(String text) {
+        Pattern pattern = Pattern.compile(timePattern);
+        Matcher matcher = pattern.matcher(text);
+        return matcher.find() ? matcher.group() : "";
     }
 }

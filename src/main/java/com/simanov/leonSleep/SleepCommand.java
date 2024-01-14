@@ -4,9 +4,9 @@ import java.time.LocalTime;
 
 public class SleepCommand {
     private LocalTime time;
-    private String command;
+    private State command;
 
-    public SleepCommand(LocalTime time, String command) {
+    public SleepCommand(LocalTime time, State command) {
         this.time = time;
         this.command = command;
     }
@@ -15,7 +15,7 @@ public class SleepCommand {
         return time;
     }
 
-    public String command() {
+    public State command() {
         return command;
     }
 
