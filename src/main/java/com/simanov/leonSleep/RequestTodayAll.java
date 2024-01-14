@@ -23,7 +23,7 @@ public class RequestTodayAll implements Request{
         }
         var duration = LeonSleep.sleepTimeAll(commands);
         response += "Леон сегодня спал " + duration.toHours() + " часов " + duration.toMinutes() + " минут\n"
-                + commands;
+                + LeonSleep.getFormattedCommands(commands);
         return response;
     }
 }

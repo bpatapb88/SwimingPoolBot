@@ -79,7 +79,7 @@ public class LeonSleep extends TelegramLongPollingBot {
             return "ok";
         }
         if(rejectRequest(update, sleepCommand)) {
-            return "Ошибка! последняя запись тоже была \"" + sleepCommand.command() + "\"";
+            return "Ошибка! последняя запись тоже была \"" + sleepCommand.command().label + "\"";
         }
         save.get(LocalDate.now()).add(sleepCommand);
         notifyPartner(update.getMessage().getChatId().toString(), sleepCommand);
@@ -94,7 +94,7 @@ public class LeonSleep extends TelegramLongPollingBot {
     private void notifyPartner(String chatId, SleepCommand sleepCommand) {
         var newChatId = chatId.equals(mamaId) ? papaId : mamaId;
         var who = chatId.equals(mamaId) ? "Мама записала что " : "Папа записала что ";
-        var message = who + "Леон " + sleepCommand.command() + " в " + sleepCommand.time();
+        var message = who + "Леон " + sleepCommand.command().label + " в " + sleepCommand.time();
         send(newChatId, message);
     }
 
@@ -154,10 +154,13 @@ public class LeonSleep extends TelegramLongPollingBot {
         return true;
      }
 
-    private String getFormattedCommands(LinkedList<SleepCommand> commands) {
+    public static String getFormattedCommands(List<SleepCommand> commands) {
         StringBuilder result = new StringBuilder();
         for (SleepCommand command : commands) {
-            result.append(command.command() + " в " + command.time() + "\n");
+            result.append(command.command().label)
+                    .append(" в ")
+                    .append(command.time())
+                    .append("\n");
         }
         return result.toString();
     }
