@@ -8,21 +8,24 @@ import java.util.Map;
 
 public class RequestTodayAll implements Request{
 
-    private Map<LocalDate, LinkedList<SleepCommand>> save;
+    private DatabaseHandler databaseHandler;
 
-    public RequestTodayAll(Map<LocalDate, LinkedList<SleepCommand>> save) {
-        this.save = save;
+
+    public RequestTodayAll(DatabaseHandler databaseHandler) {
+        this.databaseHandler = databaseHandler;
     }
 
     @Override
     public String getRespond() {
-        var commands = save.get(LocalDate.now());
+        var commands = databaseHandler.getBy(LocalDate.now());
         String response = "";
         if (!LeonSleep.verifyCommandList(commands)) {
             response = "Поряд команд неверный! Расчет будет ошибочный\n";
         }
         var duration = LeonSleep.sleepTimeAll(commands);
-        response += "Леон сегодня спал " + duration.toHours() + " часов " + duration.toMinutes() + " минут\n"
+        long hours = duration.toHours();
+        long minutes = hours > 0 ? (duration.toMinutes() % hours) : duration.toMinutes();
+        response += "Леон сегодня спал " + hours + " часов " + minutes + " минут\n"
                 + LeonSleep.getFormattedCommands(commands);
         return response;
     }

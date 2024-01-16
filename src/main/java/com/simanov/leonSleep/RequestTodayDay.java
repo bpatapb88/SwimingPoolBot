@@ -10,17 +10,17 @@ import java.util.Map;
 
 public class RequestTodayDay implements Request{
 
-    private Map<LocalDate, LinkedList<SleepCommand>> save;
+    private DatabaseHandler databaseHandler;
     private static final LocalTime dayStart = LocalTime.of(6,0);
     private static final LocalTime dayEnd = LocalTime.of(22,0);
 
-    public RequestTodayDay(Map<LocalDate, LinkedList<SleepCommand>> save) {
-        this.save = save;
+    public RequestTodayDay(DatabaseHandler databaseHandler) {
+        this.databaseHandler = databaseHandler;
     }
 
     @Override
     public String getRespond() {
-        var commands = save.get(LocalDate.now());
+        var commands = databaseHandler.getBy(LocalDate.now());
         String response = "";
         if (!LeonSleep.verifyCommandList(commands)) {
             response = "Поряд команд неверный! Расчет будет ошибочный\n";

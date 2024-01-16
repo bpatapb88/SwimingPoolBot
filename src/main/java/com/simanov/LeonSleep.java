@@ -28,6 +28,7 @@ public class LeonSleep extends TelegramLongPollingBot {
     private static final String papaId = "173780137";
     private static final String mamaId = "103165518";
     private static final String timePattern = "\\b([01]?\\d|2[0-3]):[0-5]\\d\\b";
+    private DatabaseHandler databaseHandler = new DatabaseHandler();
 
     @Override
     public String getBotUsername() {
@@ -72,18 +73,12 @@ public class LeonSleep extends TelegramLongPollingBot {
         if (sleepCommand == null) {
             return "Не понял.. дак он уснул или встал?";
         }
-
-        if (!save.containsKey(LocalDate.now())) {
-            save.put(LocalDate.now(), new LinkedList<>(List.of(sleepCommand)));
-            notifyPartner(update.getMessage().getChatId().toString(), sleepCommand);
-            return "ok";
-        }
-        if(rejectRequest(update, sleepCommand)) {
-            return "Ошибка! последняя запись тоже была \"" + sleepCommand.command().label + "\"";
-        }
-        save.get(LocalDate.now()).add(sleepCommand);
+        databaseHandler.save(sleepCommand);
+//        if(rejectRequest(update, sleepCommand)) {
+//            return "Ошибка! последняя запись тоже была \"" + sleepCommand.command().label + "\"";
+//        }
         notifyPartner(update.getMessage().getChatId().toString(), sleepCommand);
-        return "ok";
+        return "ok\n" + getFormattedCommands(List.of(sleepCommand));
     }
 
     private boolean rejectRequest(Update update, SleepCommand sleepCommand) {
@@ -122,11 +117,11 @@ public class LeonSleep extends TelegramLongPollingBot {
     private Request messageToRequest(Message recivedMessage) {
         switch (recivedMessage.getText()) {
             case "/today" :
-                return new RequestTodayAll(save);
+                return new RequestTodayAll(databaseHandler);
             case "/vcera":
                 return new RequestYesterdayAll(save);
             case "/day_sleep":
-                return new RequestTodayDay(save);
+                return new RequestTodayDay(databaseHandler);
             case "/yesterday_sleep":
                 return new RequestYesterdayDay(save);
             default:
