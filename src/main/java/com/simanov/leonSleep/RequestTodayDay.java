@@ -49,7 +49,7 @@ public class RequestTodayDay implements Request{
             duration = duration.plus(Duration.between(commands.getLast().time(), LocalTime.now()));
         }
         response += "Леон сегодня спал " + duration.toHours() + " часов " + duration.toMinutes() + " минут\n"
-                + commands;
+                + LeonSleep.getFormattedCommands(commands);
         return response;
     }
 }

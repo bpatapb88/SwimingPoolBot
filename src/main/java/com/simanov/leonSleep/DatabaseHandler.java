@@ -43,13 +43,24 @@ public class DatabaseHandler {
         return null;
     }
 
+    private void executeQuery(String query) {
+        Connection connection = getDbConnection();
+        try {
+            PreparedStatement prSt = connection.prepareStatement(query);
+            prSt.executeUpdate();
+            prSt.close();
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+        }
+    }
+
     public void save(SleepCommand sleepCommand) {
         String query = String.format("INSERT INTO %s (command, time, date) VALUES ('%s', '%s', '%s');",
                 TABLE,
                 sleepCommand.command(),
                 sleepCommand.time(),
                 LocalDate.now());
-        executeSelect(query);
+        executeQuery(query);
     }
 
     public LinkedList<SleepCommand> getBy(LocalDate date) {
