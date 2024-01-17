@@ -4,7 +4,6 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.LinkedList;
-import java.util.List;
 
 public class DatabaseHandler {
     Connection dbConnection;

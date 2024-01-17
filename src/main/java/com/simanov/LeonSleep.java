@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -190,6 +191,7 @@ public class LeonSleep extends TelegramLongPollingBot {
 
     private SleepCommand toSleepCommand(String text) {
         var localTime = grepTime(text);
+        logger.log(Level.INFO, "LocalTime is {}",localTime);
         if (text.contains(State.UP.label)){
             return new SleepCommand(localTime, State.UP);
         } else if(text.contains(State.DOWN.label)) {
@@ -209,8 +211,8 @@ public class LeonSleep extends TelegramLongPollingBot {
             );
         } else {
             return LocalTime.of(
-                    LocalTime.now().getHour(),
-                    LocalTime.now().getMinute()
+                    LocalTime.now(ZoneId.of("UTC+01:00")).getHour(),
+                    LocalTime.now(ZoneId.of("UTC+01:00")).getMinute()
             );
         }
     }

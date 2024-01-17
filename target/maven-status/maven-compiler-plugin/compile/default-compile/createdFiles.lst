@@ -7,6 +7,7 @@ com/simanov/Main.class
 com/simanov/pools/KraviHora.class
 com/simanov/pools/Pool.class
 com/simanov/leonSleep/SleepCommand.class
+com/simanov/leonSleep/DatabaseHandler.class
 com/simanov/pools/Druzstevni.class
 com/simanov/squashCenters/Viktoria.class
 com/simanov/leonSleep/RequestYesterdayDay.class
