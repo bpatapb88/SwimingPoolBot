@@ -48,7 +48,8 @@ public class RequestTodayDay implements Request{
                 && LocalTime.now().isBefore(dayEnd)) {
             duration = duration.plus(Duration.between(commands.getLast().time(), LocalTime.now()));
         }
-        response += "Леон сегодня спал " + duration.toHours() + " часов " + duration.toMinutes() + " минут\n"
+        SleepingTime sleepingTime = new SleepingTime(duration);
+        response += "Леон спал сегодня днём " + sleepingTime.hours() + " часов " + sleepingTime.minutes() + " минут\n"
                 + LeonSleep.getFormattedCommands(commands);
         return response;
     }

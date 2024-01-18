@@ -22,10 +22,8 @@ public class RequestTodayAll implements Request{
         if (!LeonSleep.verifyCommandList(commands)) {
             response = "Поряд команд неверный! Расчет будет ошибочный\n";
         }
-        var duration = LeonSleep.sleepTimeAll(commands);
-        long hours = duration.toHours();
-        long minutes = hours > 0 ? (duration.toMinutes() % hours) : duration.toMinutes();
-        response += "Леон сегодня спал " + hours + " часов " + minutes + " минут\n"
+        SleepingTime sleepingTime = new SleepingTime(LeonSleep.sleepTimeAll(commands));
+        response += "Леон сегодня спал " + sleepingTime.hours() + " часов " + sleepingTime.minutes() + " минут\n"
                 + LeonSleep.getFormattedCommands(commands);
         return response;
     }
