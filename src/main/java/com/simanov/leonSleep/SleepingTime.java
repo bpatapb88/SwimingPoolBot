@@ -18,11 +18,12 @@ public class SleepingTime {
         return hours() > 0 ? (duration.toMinutes() % MINUTES_IN_HOUR) : duration.toMinutes();
     }
 
+    public SleepingTime plus(SleepingTime add) {
+        return new SleepingTime(this.duration.plus(add.duration));
+    }
+
     @Override
     public String toString() {
-        return "SleepingTime{" +
-                "hours=" + hours() +
-                ",minutes=" + minutes() +
-                '}';
+        return hours() + " часов " + minutes() + " минут";
     }
 }

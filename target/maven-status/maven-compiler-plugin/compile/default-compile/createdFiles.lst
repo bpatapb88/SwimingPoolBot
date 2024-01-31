@@ -1,3 +1,4 @@
+com/simanov/leonSleep/RequestUtility.class
 com/simanov/squashCenters/FitnessBody$1.class
 com/simanov/leonSleep/Request.class
 com/simanov/Bot.class
@@ -6,6 +7,7 @@ com/simanov/pools/Kohoutovice.class
 com/simanov/Main.class
 com/simanov/pools/KraviHora.class
 com/simanov/pools/Pool.class
+com/simanov/leonSleep/SleepingTime.class
 com/simanov/leonSleep/SleepCommand.class
 com/simanov/leonSleep/DatabaseHandler.class
 com/simanov/pools/Druzstevni.class

@@ -4,9 +4,12 @@ import com.simanov.LeonSleep;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
+import java.util.logging.Level;
+
+import static com.simanov.Main.logger;
 
 public class RequestTodayDay implements Request{
 
@@ -21,36 +24,42 @@ public class RequestTodayDay implements Request{
     @Override
     public String getRespond() {
         var commands = databaseHandler.getBy(LocalDate.now());
-        String response = "";
+        var commandsDayBefore = databaseHandler.getBy(LocalDate.now().minusDays(1));
+        SleepingTime night = RequestUtility.getNight(commands, commandsDayBefore, LocalDate.now());
+        StringBuilder response = new StringBuilder();
         if (!LeonSleep.verifyCommandList(commands)) {
-            response = "Поряд команд неверный! Расчет будет ошибочный\n";
-        }
-        SleepCommand previous = null;
-        Duration duration = Duration.ZERO;
-        for (SleepCommand command : commands) {
-            if(command.time().isBefore(dayStart)) {
-                continue;
-            }
-            if (previous == null && command.command().equals(State.UP)) {
-                previous = command;
-                continue;
-            }
-            if (previous != null) {
-                if (command.command().equals(State.UP)) {
-                    duration = duration.plus(Duration.between(previous.time(), command.time()));
-                }
-                previous = command;
-            }
+            response.append("Поряд команд неверный! Расчет будет ошибочный\n");
         }
 
-        if (commands.getLast().command().equals(State.DOWN)
+        LinkedHashMap<LocalTime, SleepingTime> sleep = RequestUtility.getSleepMap(commands);
+
+        if (!commands.isEmpty() && commands.getLast().command().equals(State.DOWN)
                 && commands.getLast().time().isBefore(dayEnd)
                 && LocalTime.now().isBefore(dayEnd)) {
-            duration = duration.plus(Duration.between(commands.getLast().time(), LocalTime.now()));
+            sleep.put(commands.getLast().time(), null);
         }
-        SleepingTime sleepingTime = new SleepingTime(duration);
-        response += "Леон спал сегодня днём " + sleepingTime.hours() + " часов " + sleepingTime.minutes() + " минут\n"
-                + LeonSleep.getFormattedCommands(commands);
-        return response;
+
+        SleepingTime sleepingTime = new SleepingTime(Duration.ZERO);
+        response.append("Ночью спал " + night + "\n");
+        response.append("--------------\n");
+        response.append(" Уснул | Спал\n");
+        response.append("--------------\n");
+        for(Map.Entry<LocalTime, SleepingTime> entry : sleep.entrySet()) {
+            response.append(" ").append(entry.getKey()).append(" | ");
+            if (entry.getValue() == null) {
+                response.append("  ?  ");
+            } else {
+                sleepingTime = sleepingTime.plus(entry.getValue());
+                response.append(entry.getValue());
+            }
+            response.append("\n");
+        }
+
+        response.append("Сумма снов за день ")
+                .append(sleepingTime.hours()).append(" часов ")
+                .append(sleepingTime.minutes()).append(" минут");
+        return response.toString();
     }
+
+
 }

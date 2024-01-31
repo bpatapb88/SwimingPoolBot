@@ -124,7 +124,7 @@ public class LeonSleep extends TelegramLongPollingBot {
             case "/day_sleep":
                 return new RequestTodayDay(databaseHandler);
             case "/yesterday_sleep":
-                return new RequestYesterdayDay(save);
+                return new RequestYesterdayDay(databaseHandler);
             default:
                 return null;
         }

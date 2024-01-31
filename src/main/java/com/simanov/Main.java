@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 
 public class Main {
 
-    static Logger logger;
+    public static Logger logger;
     static {
         try(FileInputStream ins = new FileInputStream("log.config")){
             LogManager.getLogManager().readConfiguration(ins);
