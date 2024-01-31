@@ -24,12 +24,11 @@ import static com.simanov.Main.logger;
 
 public class LeonSleep extends TelegramLongPollingBot {
 
-    private Map<LocalDate, LinkedList<SleepCommand>> save = new HashMap<>();
-    //TODO notify both parents about request
-    private static final String papaId = "173780137";
-    private static final String mamaId = "103165518";
-    private static final String timePattern = "\\b([01]?\\d|2[0-3]):[0-5]\\d\\b";
-    private DatabaseHandler databaseHandler = new DatabaseHandler();
+    private final Map<LocalDate, LinkedList<SleepCommand>> save = new HashMap<>();
+    private static final String PAPA_ID = "173780137";
+    private static final String MAMA_ID = "103165518";
+    private static final String TIME_PATTERN = "\\b([01]?\\d|2[0-3]):[0-5]\\d\\b";
+    private final DatabaseHandler databaseHandler = new DatabaseHandler();
 
     @Override
     public String getBotUsername() {
@@ -66,7 +65,7 @@ public class LeonSleep extends TelegramLongPollingBot {
 
     private boolean notParents(Update update) {
         var id = update.getMessage().getChatId().toString();
-        return !id.equals(papaId) && !id.equals(mamaId);
+        return !id.equals(PAPA_ID) && !id.equals(MAMA_ID);
     }
 
     private String handleRequest(Update update, Message receivedMessage) {
@@ -75,21 +74,13 @@ public class LeonSleep extends TelegramLongPollingBot {
             return "Не понял.. дак он уснул или встал?";
         }
         databaseHandler.save(sleepCommand);
-//        if(rejectRequest(update, sleepCommand)) {
-//            return "Ошибка! последняя запись тоже была \"" + sleepCommand.command().label + "\"";
-//        }
         notifyPartner(update.getMessage().getChatId().toString(), sleepCommand);
         return "ok\n" + getFormattedCommands(List.of(sleepCommand));
     }
 
-    private boolean rejectRequest(Update update, SleepCommand sleepCommand) {
-        return textToTime(update.getMessage().getText().toLowerCase()).equals("")
-                && save.get(LocalDate.now()).getLast().command().equals(sleepCommand.command());
-    }
-
     private void notifyPartner(String chatId, SleepCommand sleepCommand) {
-        var newChatId = chatId.equals(mamaId) ? papaId : mamaId;
-        var who = chatId.equals(mamaId) ? "Мама записала что " : "Папа записала что ";
+        var newChatId = chatId.equals(MAMA_ID) ? PAPA_ID : MAMA_ID;
+        var who = chatId.equals(MAMA_ID) ? "Мама записала что " : "Папа записала что ";
         var message = who + "Леон " + sleepCommand.command().label + " в " + sleepCommand.time();
         send(newChatId, message);
     }
@@ -117,10 +108,6 @@ public class LeonSleep extends TelegramLongPollingBot {
 
     private Request messageToRequest(Message recivedMessage) {
         switch (recivedMessage.getText()) {
-            case "/today" :
-                return new RequestTodayAll(databaseHandler);
-            case "/vcera":
-                return new RequestYesterdayAll(save);
             case "/day_sleep":
                 return new RequestTodayDay(databaseHandler);
             case "/yesterday_sleep":
@@ -218,7 +205,7 @@ public class LeonSleep extends TelegramLongPollingBot {
     }
 
     private String textToTime(String text) {
-        Pattern pattern = Pattern.compile(timePattern);
+        Pattern pattern = Pattern.compile(TIME_PATTERN);
         Matcher matcher = pattern.matcher(text);
         return matcher.find() ? matcher.group() : "";
     }
