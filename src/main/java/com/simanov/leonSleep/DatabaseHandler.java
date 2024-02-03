@@ -32,6 +32,12 @@ public class DatabaseHandler {
         return dbConnection;
     }
 
+    public boolean cancelLast() {
+        var query = String.format("DELETE FROM %1$s WHERE id in (SELECT id FROM %1$s ORDER BY id desc LIMIT 1);",
+                TABLE);
+        return executeQuery(query) > 0;
+    }
+
     private ResultSet executeSelect(String select) {
         Connection connection = getDbConnection();
         try {
@@ -43,24 +49,26 @@ public class DatabaseHandler {
         return null;
     }
 
-    private void executeQuery(String query) {
+    private int executeQuery(String query) {
         Connection connection = getDbConnection();
+        int result = 0;
         try {
             PreparedStatement prSt = connection.prepareStatement(query);
-            prSt.executeUpdate();
+            result = prSt.executeUpdate();
             prSt.close();
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
+        return result;
     }
 
-    public void save(SleepCommand sleepCommand) {
+    public int save(SleepCommand sleepCommand) {
         String query = String.format("INSERT INTO %s (command, time, date) VALUES ('%s', '%s', '%s');",
                 TABLE,
                 sleepCommand.command(),
                 sleepCommand.time(),
                 LocalDate.now());
-        executeQuery(query);
+        return executeQuery(query);
     }
 
     public LinkedList<SleepCommand> getBy(LocalDate date) {

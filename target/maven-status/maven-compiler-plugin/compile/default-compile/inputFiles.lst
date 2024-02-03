@@ -1,10 +1,8 @@
-/Users/semensimanov/Downloads/SwimingPoolBot/src/main/java/com/simanov/leonSleep/RequestYesterdayAll.java
 /Users/semensimanov/Downloads/SwimingPoolBot/src/main/java/com/simanov/LeonSleep.java
 /Users/semensimanov/Downloads/SwimingPoolBot/src/main/java/com/simanov/leonSleep/SleepingTime.java
 /Users/semensimanov/Downloads/SwimingPoolBot/src/main/java/com/simanov/pools/Ponavka.java
 /Users/semensimanov/Downloads/SwimingPoolBot/src/main/java/com/simanov/pools/Kohoutovice.java
 /Users/semensimanov/Downloads/SwimingPoolBot/src/main/java/com/simanov/pools/Druzstevni.java
-/Users/semensimanov/Downloads/SwimingPoolBot/src/main/java/com/simanov/leonSleep/RequestUtility.java
 /Users/semensimanov/Downloads/SwimingPoolBot/src/main/java/com/simanov/leonSleep/RequestYesterdayDay.java
 /Users/semensimanov/Downloads/SwimingPoolBot/src/main/java/com/simanov/pools/ZaLuzankami.java
 /Users/semensimanov/Downloads/SwimingPoolBot/src/main/java/com/simanov/squashCenters/SquashCenter.java
@@ -13,9 +11,9 @@
 /Users/semensimanov/Downloads/SwimingPoolBot/src/main/java/com/simanov/leonSleep/SleepCommand.java
 /Users/semensimanov/Downloads/SwimingPoolBot/src/main/java/com/simanov/squashCenters/FitnessBody.java
 /Users/semensimanov/Downloads/SwimingPoolBot/src/main/java/com/simanov/leonSleep/RequestTodayDay.java
+/Users/semensimanov/Downloads/SwimingPoolBot/src/main/java/com/simanov/leonSleep/RequestCancel.java
 /Users/semensimanov/Downloads/SwimingPoolBot/src/main/java/com/simanov/leonSleep/State.java
 /Users/semensimanov/Downloads/SwimingPoolBot/src/main/java/com/simanov/leonSleep/DatabaseHandler.java
-/Users/semensimanov/Downloads/SwimingPoolBot/src/main/java/com/simanov/leonSleep/RequestTodayAll.java
 /Users/semensimanov/Downloads/SwimingPoolBot/src/main/java/com/simanov/Main.java
 /Users/semensimanov/Downloads/SwimingPoolBot/src/main/java/com/simanov/pools/TjTesla.java
 /Users/semensimanov/Downloads/SwimingPoolBot/src/main/java/com/simanov/Bot.java

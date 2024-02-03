@@ -24,6 +24,9 @@ import static com.simanov.Main.logger;
 
 public class LeonSleep extends TelegramLongPollingBot {
 
+    public static final LocalTime DAY_END = LocalTime.of(22,0);
+    private static final int INTERVAL_BTW_SLEEP = 180;
+
     private final Map<LocalDate, LinkedList<SleepCommand>> save = new HashMap<>();
     private static final String PAPA_ID = "173780137";
     private static final String MAMA_ID = "103165518";
@@ -73,9 +76,9 @@ public class LeonSleep extends TelegramLongPollingBot {
         if (sleepCommand == null) {
             return "Не понял.. дак он уснул или встал?";
         }
-        databaseHandler.save(sleepCommand);
+        int result = databaseHandler.save(sleepCommand);
         notifyPartner(update.getMessage().getChatId().toString(), sleepCommand);
-        return "ok\n" + getFormattedCommands(List.of(sleepCommand));
+        return result > 0 ? "ok\n" + getFormattedCommands(sleepCommand) : "не удалось записать";
     }
 
     private void notifyPartner(String chatId, SleepCommand sleepCommand) {
@@ -112,6 +115,8 @@ public class LeonSleep extends TelegramLongPollingBot {
                 return new RequestTodayDay(databaseHandler);
             case "/yesterday_sleep":
                 return new RequestYesterdayDay(databaseHandler);
+            case "/undo":
+                return new RequestCancel(databaseHandler);
             default:
                 return null;
         }
@@ -137,14 +142,18 @@ public class LeonSleep extends TelegramLongPollingBot {
         return true;
      }
 
-    public static String getFormattedCommands(List<SleepCommand> commands) {
+    public static String getFormattedCommands(SleepCommand command) {
         StringBuilder result = new StringBuilder();
-        for (SleepCommand command : commands) {
-            result.append(command.command().label)
-                    .append(" в ")
-                    .append(command.time())
-                    .append("\n");
+        result.append(command.command().label)
+            .append(" в ")
+            .append(command.time())
+            .append("\n");
+        if (command.command().equals(State.UP) && command.time().isBefore(DAY_END)) {
+            result.append("Следующий сон в ")
+                .append(command.time().plusMinutes(INTERVAL_BTW_SLEEP))
+                .append("\n");
         }
+
         return result.toString();
     }
 

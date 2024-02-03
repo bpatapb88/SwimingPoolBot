@@ -1,4 +1,3 @@
-com/simanov/leonSleep/RequestUtility.class
 com/simanov/squashCenters/FitnessBody$1.class
 com/simanov/leonSleep/Request.class
 com/simanov/Bot.class
@@ -13,13 +12,12 @@ com/simanov/leonSleep/DatabaseHandler.class
 com/simanov/pools/Druzstevni.class
 com/simanov/squashCenters/Viktoria.class
 com/simanov/leonSleep/RequestYesterdayDay.class
+com/simanov/leonSleep/RequestCancel.class
 com/simanov/leonSleep/RequestTodayDay.class
 com/simanov/pools/ZaLuzankami.class
-com/simanov/leonSleep/RequestYesterdayAll.class
 com/simanov/Squash.class
 com/simanov/leonSleep/State.class
 com/simanov/pools/TjTesla.class
 com/simanov/pools/Ponavka.class
 com/simanov/LeonSleep.class
-com/simanov/leonSleep/RequestTodayAll.class
 com/simanov/squashCenters/FitnessBody.class

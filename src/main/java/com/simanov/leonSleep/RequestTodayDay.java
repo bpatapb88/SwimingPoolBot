@@ -1,12 +1,12 @@
 package com.simanov.leonSleep;
 
+import com.simanov.LeonSleep;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
 
 public class RequestTodayDay extends Request{
-
-    private static final LocalTime dayEnd = LocalTime.of(22,0);
 
     public RequestTodayDay(DatabaseHandler databaseHandler) {
         super(databaseHandler);
@@ -42,8 +42,8 @@ public class RequestTodayDay extends Request{
     @Override
     void correction(LinkedList<SleepCommand> commands, LinkedHashMap<LocalTime, SleepingTime> sleep) {
         if (!commands.isEmpty() && commands.getLast().command().equals(State.DOWN)
-                && commands.getLast().time().isBefore(dayEnd)
-                && LocalTime.now().isBefore(dayEnd)) {
+                && commands.getLast().time().isBefore(LeonSleep.DAY_END)
+                && LocalTime.now().isBefore(LeonSleep.DAY_END)) {
             sleep.put(commands.getLast().time(), null);
         }
     }
