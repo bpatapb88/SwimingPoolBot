@@ -12,13 +12,15 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.simanov.Main.logger;
 
@@ -27,11 +29,10 @@ public class LeonSleep extends TelegramLongPollingBot {
     public static final LocalTime DAY_END = LocalTime.of(22,0);
     private static final int INTERVAL_BTW_SLEEP = 180;
 
-    private final Map<LocalDate, LinkedList<SleepCommand>> save = new HashMap<>();
     private static final String PAPA_ID = "173780137";
     private static final String MAMA_ID = "103165518";
-    private static final String TIME_PATTERN = "\\b([01]?\\d|2[0-3]):[0-5]\\d\\b";
     private final DatabaseHandler databaseHandler = new DatabaseHandler();
+    private List<ScheduledFuture<?>> scheduledTasks = new ArrayList<>();
 
     @Override
     public String getBotUsername() {
@@ -72,20 +73,48 @@ public class LeonSleep extends TelegramLongPollingBot {
     }
 
     private String handleRequest(Update update, Message receivedMessage) {
-        var sleepCommand = toSleepCommand(receivedMessage.getText().toLowerCase());
+        var sleepCommand = SleepCommand.toSleepCommand(receivedMessage.getText().toLowerCase());
         if (sleepCommand == null) {
             return "Не понял.. дак он уснул или встал?";
         }
         int result = databaseHandler.save(sleepCommand);
+        if (result <= 0) {
+            return "не удалось записать";
+        }
         notifyPartner(update.getMessage().getChatId().toString(), sleepCommand);
-        return result > 0 ? "ok\n" + getFormattedCommands(sleepCommand) : "не удалось записать";
+        return sleepCommand.getFormatted();
     }
 
     private void notifyPartner(String chatId, SleepCommand sleepCommand) {
         var newChatId = chatId.equals(MAMA_ID) ? PAPA_ID : MAMA_ID;
         var who = chatId.equals(MAMA_ID) ? "Мама записала что " : "Папа записала что ";
-        var message = who + "Леон " + sleepCommand.command().label + " в " + sleepCommand.time();
+        var message = who + "Леон " + sleepCommand.getFormatted();
         send(newChatId, message);
+        scheduleFeatureNotification(sleepCommand);
+    }
+
+    private void scheduleFeatureNotification(SleepCommand sleepCommand) {
+        ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+        Runnable task = () -> {
+            send(MAMA_ID, "Леону пора спать");
+            send(PAPA_ID, "Леону пора спать");
+        };
+        if(sleepCommand.command().equals(State.UP)
+                && sleepCommand.time().isBefore(DAY_END.minus(Duration.of(INTERVAL_BTW_SLEEP, ChronoUnit.MINUTES)))) {
+            var minutes = Duration.between(sleepCommand.time(), LocalTime.now()).toMinutes();
+            var feature = scheduledExecutor.schedule(
+                    task,
+                    INTERVAL_BTW_SLEEP - minutes,
+                    TimeUnit.MINUTES
+            );
+            scheduledTasks.add(feature);
+        } else if(sleepCommand.command().equals(State.DOWN) && !scheduledTasks.isEmpty())  {
+            logger.log(Level.INFO, "Леон уснул вовремя, отменить запланированные нотификации");
+            for(ScheduledFuture<?> feature : scheduledTasks) {
+                feature.cancel(true);
+            }
+        }
+        scheduledExecutor.shutdown();
     }
 
     private void send(String chatId, String text) {
@@ -153,7 +182,6 @@ public class LeonSleep extends TelegramLongPollingBot {
                 .append(command.time().plusMinutes(INTERVAL_BTW_SLEEP))
                 .append("\n");
         }
-
         return result.toString();
     }
 
@@ -183,39 +211,5 @@ public class LeonSleep extends TelegramLongPollingBot {
             result = result.plus(Duration.between(commands.get(commands.size()-1).time(), LocalTime.now()));
         }
         return result;
-    }
-
-    private SleepCommand toSleepCommand(String text) {
-        var localTime = grepTime(text);
-        logger.log(Level.INFO, "LocalTime is {}",localTime);
-        if (text.contains(State.UP.label)){
-            return new SleepCommand(localTime, State.UP);
-        } else if(text.contains(State.DOWN.label)) {
-            return new SleepCommand(localTime, State.DOWN);
-        } else {
-            return null;
-        }
-    }
-
-    private LocalTime grepTime(String text) {
-        String time = textToTime(text);
-        if (!time.equals("")) {
-            var timeArray = time.split(":");
-            return LocalTime.of(
-                    Integer.parseInt(timeArray[0]),
-                    Integer.parseInt(timeArray[1])
-            );
-        } else {
-            return LocalTime.of(
-                    LocalTime.now(ZoneId.of("UTC+01:00")).getHour(),
-                    LocalTime.now(ZoneId.of("UTC+01:00")).getMinute()
-            );
-        }
-    }
-
-    private String textToTime(String text) {
-        Pattern pattern = Pattern.compile(TIME_PATTERN);
-        Matcher matcher = pattern.matcher(text);
-        return matcher.find() ? matcher.group() : "";
     }
 }
