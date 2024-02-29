@@ -1,9 +1,7 @@
-package com.simanov.leonSleep;
+package com.simanov.leonsleep;
 
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,20 +12,15 @@ public class SleepCommand {
     private static final String TIME_PATTERN = "\\b([01]?\\d|2[0-3]):[0-5]\\d\\b";
     public static final LocalTime DAY_END = LocalTime.of(22,0);
     private static final int INTERVAL_BTW_SLEEP = 180;
+    private static final String NEXT_SLEEP_AT = "Следующий сон в ";
 
-    private LocalTime time;
-    private State command;
+    private final LocalTime time;
+    private final State command;
 
     public SleepCommand(LocalTime time, State command) {
         this.time = time;
         this.command = command;
     }
-
-
-
-
-
-
 
     public LocalTime time() {
         return time;
@@ -39,7 +32,7 @@ public class SleepCommand {
 
     public static SleepCommand toSleepCommand(String text) {
         var localTime = grepTime(text);
-        logger.log(Level.INFO, "LocalTime is {}", localTime.toString());
+        logger.log(Level.INFO, "LocalTime is {}", localTime);
         if (text.contains(State.UP.label)){
             return new SleepCommand(localTime, State.UP);
         } else if(text.contains(State.DOWN.label)) {
@@ -56,7 +49,7 @@ public class SleepCommand {
                 .append(this.time())
                 .append("\n");
         if (this.command().equals(State.UP) && this.time().isBefore(DAY_END)) {
-            result.append("Следующий сон в ")
+            result.append(NEXT_SLEEP_AT)
                     .append(this.time().plusMinutes(INTERVAL_BTW_SLEEP))
                     .append("\n");
         }

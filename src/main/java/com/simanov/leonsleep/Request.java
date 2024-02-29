@@ -1,4 +1,4 @@
-package com.simanov.leonSleep;
+package com.simanov.leonsleep;
 
 import com.simanov.LeonSleep;
 
@@ -43,7 +43,7 @@ public abstract class Request {
         return response.toString();
     }
 
-    public abstract LocalDate getAimDay();
+    abstract LocalDate getAimDay();
 
     abstract void correction(
             LinkedList<SleepCommand> commands,
@@ -58,7 +58,7 @@ public abstract class Request {
             SleepingTime sumTime
     );
 
-    public static LinkedHashMap<LocalTime, SleepingTime> getSleepMap(LinkedList<SleepCommand> commands) {
+    private static LinkedHashMap<LocalTime, SleepingTime> getSleepMap(LinkedList<SleepCommand> commands) {
         LinkedHashMap<LocalTime, SleepingTime> sleep = new LinkedHashMap<>();
         SleepCommand previous = null;
         for (SleepCommand command : commands) {
@@ -77,7 +77,7 @@ public abstract class Request {
         return sleep;
     }
 
-    public static SleepingTime getNight(
+    private static SleepingTime getNight(
             LinkedList<SleepCommand> commands,
             LinkedList<SleepCommand> commandsDayBefore,
             LocalDate day

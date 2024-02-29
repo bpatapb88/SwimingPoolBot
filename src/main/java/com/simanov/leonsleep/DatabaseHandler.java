@@ -1,4 +1,4 @@
-package com.simanov.leonSleep;
+package com.simanov.leonsleep;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -40,8 +40,7 @@ public class DatabaseHandler {
 
     private ResultSet executeSelect(String select) {
         Connection connection = getDbConnection();
-        try {
-            PreparedStatement prSt = connection.prepareStatement(select);
+        try (PreparedStatement prSt = connection.prepareStatement(select)) {
             return prSt.executeQuery();
         } catch (SQLException exception) {
             exception.printStackTrace();
@@ -52,10 +51,8 @@ public class DatabaseHandler {
     private int executeQuery(String query) {
         Connection connection = getDbConnection();
         int result = 0;
-        try {
-            PreparedStatement prSt = connection.prepareStatement(query);
+        try (PreparedStatement prSt = connection.prepareStatement(query)) {
             result = prSt.executeUpdate();
-            prSt.close();
         } catch (SQLException exception) {
             exception.printStackTrace();
         }

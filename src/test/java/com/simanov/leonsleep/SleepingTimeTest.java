@@ -1,11 +1,9 @@
-package com.simanov.leonSleep;
+package com.simanov.leonsleep;
 
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.LocalTime;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class SleepingTimeTest {
 
@@ -15,8 +13,6 @@ class SleepingTimeTest {
         Duration duration2 = Duration.between(LocalTime.of(14,20), LocalTime.of(15,47));
         var result = duration1.plus(duration2);
         var sleepingTime = new SleepingTime(result);
-
         System.out.println(sleepingTime);
-
     }
 }

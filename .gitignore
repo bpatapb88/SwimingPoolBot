@@ -1,7 +1,7 @@
 /src/main/resources/Config.txt
 /src/main/resources/SquashConf.txt
 /src/main/resources/LeonConf.txt
-
+/.idea/*
 # Compiled class file
 *.class
 

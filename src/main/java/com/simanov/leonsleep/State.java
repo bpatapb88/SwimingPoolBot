@@ -1,4 +1,4 @@
-package com.simanov.leonSleep;
+package com.simanov.leonsleep;
 
 public enum State {
     UP("встал"),
@@ -6,7 +6,7 @@ public enum State {
 
     public final String label;
 
-    private State(String label) {
+    State(String label) {
         this.label = label;
     }
 }

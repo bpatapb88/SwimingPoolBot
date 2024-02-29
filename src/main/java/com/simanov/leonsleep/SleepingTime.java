@@ -1,4 +1,4 @@
-package com.simanov.leonSleep;
+package com.simanov.leonsleep;
 
 import java.time.Duration;
 

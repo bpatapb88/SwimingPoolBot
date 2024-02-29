@@ -1,7 +1,7 @@
 package com.simanov;
 
 import com.google.common.io.Resources;
-import com.simanov.leonSleep.*;
+import com.simanov.leonsleep.*;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -14,7 +14,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -31,6 +30,10 @@ public class LeonSleep extends TelegramLongPollingBot {
 
     private static final String PAPA_ID = "173780137";
     private static final String MAMA_ID = "103165518";
+    private static final String DO_NOT_UNDERSTAND = "Не понял.. дак он уснул или встал?";
+    private static final String DO_NOT_WRITE = "не удалось записать";
+
+    private static final String LEON_NEED_SLEEP = "Леону пора спать";
     private final DatabaseHandler databaseHandler = new DatabaseHandler();
     private List<ScheduledFuture<?>> scheduledTasks = new ArrayList<>();
 
@@ -75,11 +78,11 @@ public class LeonSleep extends TelegramLongPollingBot {
     private String handleRequest(Update update, Message receivedMessage) {
         var sleepCommand = SleepCommand.toSleepCommand(receivedMessage.getText().toLowerCase());
         if (sleepCommand == null) {
-            return "Не понял.. дак он уснул или встал?";
+            return DO_NOT_UNDERSTAND;
         }
         int result = databaseHandler.save(sleepCommand);
         if (result <= 0) {
-            return "не удалось записать";
+            return DO_NOT_WRITE;
         }
         notifyPartner(update.getMessage().getChatId().toString(), sleepCommand);
         return sleepCommand.getFormatted();
@@ -96,8 +99,8 @@ public class LeonSleep extends TelegramLongPollingBot {
     private void scheduleFeatureNotification(SleepCommand sleepCommand) {
         ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
         Runnable task = () -> {
-            send(MAMA_ID, "Леону пора спать");
-            send(PAPA_ID, "Леону пора спать");
+            send(MAMA_ID, LEON_NEED_SLEEP);
+            send(PAPA_ID, LEON_NEED_SLEEP);
         };
         if(sleepCommand.command().equals(State.UP)
                 && sleepCommand.time().isBefore(DAY_END.minus(Duration.of(INTERVAL_BTW_SLEEP, ChronoUnit.MINUTES)))) {
@@ -109,7 +112,7 @@ public class LeonSleep extends TelegramLongPollingBot {
             );
             scheduledTasks.add(feature);
         } else if(sleepCommand.command().equals(State.DOWN) && !scheduledTasks.isEmpty())  {
-            logger.log(Level.INFO, "Леон уснул вовремя, отменить запланированные нотификации");
+            logger.log(Level.INFO, "Fall in sleep in time, remove notification");
             for(ScheduledFuture<?> feature : scheduledTasks) {
                 feature.cancel(true);
             }
@@ -170,46 +173,4 @@ public class LeonSleep extends TelegramLongPollingBot {
         }
         return true;
      }
-
-    public static String getFormattedCommands(SleepCommand command) {
-        StringBuilder result = new StringBuilder();
-        result.append(command.command().label)
-            .append(" в ")
-            .append(command.time())
-            .append("\n");
-        if (command.command().equals(State.UP) && command.time().isBefore(DAY_END)) {
-            result.append("Следующий сон в ")
-                .append(command.time().plusMinutes(INTERVAL_BTW_SLEEP))
-                .append("\n");
-        }
-        return result.toString();
-    }
-
-    public static Duration sleepTimeAll(LinkedList<SleepCommand> commands) {
-        Duration result = Duration.ZERO;
-        if(commands.isEmpty()) {
-            return Duration.ZERO;
-        }
-        commands.sort(Comparator.comparing(SleepCommand::time));
-        var firstIsUp = commands.getFirst().command().equals(State.UP);
-        State state = firstIsUp ? State.UP : State.DOWN;
-        LocalTime previous = firstIsUp ? LocalTime.MIN : commands.getFirst().time();
-
-        for(SleepCommand command : commands) {
-            if(command.command().equals(state)) {
-                if (state.equals(State.UP)) {
-                    result = result.plus(Duration.between(previous, command.time()));
-                }
-                previous = command.time();
-                state = state.equals(State.UP) ? State.DOWN : State.UP;
-            } else {
-                //TODO
-            }
-        }
-
-        if(commands.getLast().command().equals(State.DOWN)) {
-            result = result.plus(Duration.between(commands.get(commands.size()-1).time(), LocalTime.now()));
-        }
-        return result;
-    }
 }
