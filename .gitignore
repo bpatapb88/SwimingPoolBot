@@ -2,6 +2,7 @@
 /src/main/resources/SquashConf.txt
 /src/main/resources/LeonConf.txt
 /.idea/*
+/target/*
 # Compiled class file
 *.class
 
