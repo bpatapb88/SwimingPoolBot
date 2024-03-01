@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -35,7 +36,7 @@ public class LeonSleep extends TelegramLongPollingBot {
 
     private static final String LEON_NEED_SLEEP = "Леону пора спать";
     private final DatabaseHandler databaseHandler = new DatabaseHandler();
-    private List<ScheduledFuture<?>> scheduledTasks = new ArrayList<>();
+    private final List<ScheduledFuture<?>> scheduledTasks = new ArrayList<>();
 
     @Override
     public String getBotUsername() {
@@ -80,18 +81,21 @@ public class LeonSleep extends TelegramLongPollingBot {
         if (sleepCommand == null) {
             return DO_NOT_UNDERSTAND;
         }
-        int result = databaseHandler.save(sleepCommand);
+        var date = sleepCommand.time().isAfter(LocalTime.now())
+                ? LocalDate.now().minusDays(1)
+                : LocalDate.now();
+        int result = databaseHandler.save(sleepCommand, date);
         if (result <= 0) {
             return DO_NOT_WRITE;
         }
-        notifyPartner(update.getMessage().getChatId().toString(), sleepCommand);
-        return sleepCommand.getFormatted();
+        notifyPartner(update.getMessage().getChatId().toString(), sleepCommand, date);
+        return sleepCommand.getFormatted() + "\n" + date;
     }
 
-    private void notifyPartner(String chatId, SleepCommand sleepCommand) {
+    private void notifyPartner(String chatId, SleepCommand sleepCommand, LocalDate date) {
         var newChatId = chatId.equals(MAMA_ID) ? PAPA_ID : MAMA_ID;
         var who = chatId.equals(MAMA_ID) ? "Мама записала что " : "Папа записала что ";
-        var message = who + "Леон " + sleepCommand.getFormatted();
+        var message = who + "Леон " + sleepCommand.getFormatted() + "\n" + date;
         send(newChatId, message);
         scheduleFeatureNotification(sleepCommand);
     }

@@ -59,12 +59,12 @@ public class DatabaseHandler {
         return result;
     }
 
-    public int save(SleepCommand sleepCommand) {
+    public int save(SleepCommand sleepCommand, LocalDate date) {
         String query = String.format("INSERT INTO %s (command, time, date) VALUES ('%s', '%s', '%s');",
                 TABLE,
                 sleepCommand.command(),
                 sleepCommand.time(),
-                LocalDate.now());
+                date);
         return executeQuery(query);
     }
 

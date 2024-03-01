@@ -31,7 +31,7 @@ public class SleepCommand {
     }
 
     public static SleepCommand toSleepCommand(String text) {
-        var localTime = grepTime(text);
+        var localTime = getTime(text);
         logger.log(Level.INFO, "LocalTime is {}", localTime);
         if (text.contains(State.UP.label)){
             return new SleepCommand(localTime, State.UP);
@@ -56,10 +56,10 @@ public class SleepCommand {
         return result.toString();
     }
 
-    private static LocalTime grepTime(String text) {
-        String time = textToTime(text);
-        if (!time.equals("")) {
-            var timeArray = time.split(":");
+    private static LocalTime getTime(String text) {
+        String timeInText = timeInText(text);
+        if (!timeInText.equals("")) {
+            var timeArray = timeInText.split(":");
             return LocalTime.of(
                     Integer.parseInt(timeArray[0]),
                     Integer.parseInt(timeArray[1])
@@ -72,7 +72,7 @@ public class SleepCommand {
         }
     }
 
-    private static String textToTime(String text) {
+    private static String timeInText(String text) {
         Pattern pattern = Pattern.compile(TIME_PATTERN);
         Matcher matcher = pattern.matcher(text);
         return matcher.find() ? matcher.group() : "";
