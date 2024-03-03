@@ -4,6 +4,9 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.LinkedList;
+import java.util.logging.Level;
+
+import static com.simanov.Main.logger;
 
 public class DatabaseHandler {
     Connection dbConnection;
@@ -38,16 +41,6 @@ public class DatabaseHandler {
         return executeQuery(query) > 0;
     }
 
-    private ResultSet executeSelect(String select) {
-        Connection connection = getDbConnection();
-        try (PreparedStatement prSt = connection.prepareStatement(select)) {
-            return prSt.executeQuery();
-        } catch (SQLException exception) {
-            exception.printStackTrace();
-        }
-        return null;
-    }
-
     private int executeQuery(String query) {
         Connection connection = getDbConnection();
         int result = 0;
@@ -60,6 +53,7 @@ public class DatabaseHandler {
     }
 
     public int save(SleepCommand sleepCommand, LocalDate date) {
+        logger.log(Level.INFO, "Save: sleepCommand {}", sleepCommand);
         String query = String.format("INSERT INTO %s (command, time, date) VALUES ('%s', '%s', '%s');",
                 TABLE,
                 sleepCommand.command(),
@@ -72,9 +66,11 @@ public class DatabaseHandler {
         String query = String.format("SELECT * FROM %s WHERE date='%s';",
                 TABLE,
                 date.toString());
-        ResultSet resultSet = executeSelect(query);
+
+        Connection connection = getDbConnection();
         LinkedList<SleepCommand> result = new LinkedList<>();
-        try {
+        try (PreparedStatement prSt = connection.prepareStatement(query)) {
+            ResultSet resultSet = prSt.executeQuery();
             while (resultSet != null && resultSet.next()) {
                 String command = resultSet.getString("command");
                 String time = resultSet.getTime("time").toString();
@@ -85,7 +81,6 @@ public class DatabaseHandler {
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
-
         return result;
     }
 }
