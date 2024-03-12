@@ -81,15 +81,21 @@ public class LeonSleep extends TelegramLongPollingBot {
         if (sleepCommand == null) {
             return DO_NOT_UNDERSTAND;
         }
-        var date = sleepCommand.time().isAfter(LocalTime.now())
-                ? LocalDate.now().minusDays(1)
-                : LocalDate.now();
+        LocalDate date;
+        String prefix = "";
+        if (sleepCommand.time().isAfter(LocalTime.now())) {
+            date = LocalDate.now().minusDays(1);
+            prefix = "\n" + date;
+        } else {
+            date = LocalDate.now();
+        }
+
         int result = databaseHandler.save(sleepCommand, date);
         if (result <= 0) {
             return DO_NOT_WRITE;
         }
         notifyPartner(update.getMessage().getChatId().toString(), sleepCommand, date);
-        return sleepCommand.getFormatted() + "\n" + date;
+        return sleepCommand.getFormatted() + prefix;
     }
 
     private void notifyPartner(String chatId, SleepCommand sleepCommand, LocalDate date) {
